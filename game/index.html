@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARAVILLA — One Last Score</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1210; font-family: Georgia, 'Times New Roman', serif; }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.7); }
+  #tagline { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(20,10,8,.72); border: 1px solid rgba(255,205,120,.55); border-radius: 6px; padding: 6px 14px; font-size: 15px; letter-spacing: .06em; white-space: nowrap; }
+  #tagline b { color: #ffd27a; }
+  #minimap { position: absolute; top: 52px; left: 12px; width: 176px; height: 176px; border: 2px solid rgba(255,255,255,.55); border-radius: 8px; background: rgba(10,16,24,.72); }
+  #wanted { position: absolute; top: 12px; right: 14px; font-size: 26px; letter-spacing: 2px; color: #ffd27a; }
+  #wanted .off { color: rgba(255,255,255,.28); }
+  #money { position: absolute; top: 48px; right: 14px; font-size: 20px; color: #b8ffb0; font-weight: bold; }
+  #weapon { position: absolute; top: 78px; right: 14px; font-size: 15px; color: #fff; background: rgba(20,10,8,.6); border-radius: 5px; padding: 3px 8px; }
+  #objective { position: absolute; left: 50%; bottom: 118px; transform: translateX(-50%); background: rgba(20,10,8,.72); border-left: 4px solid #ffd27a; border-radius: 4px; padding: 8px 14px; font-size: 16px; max-width: 640px; text-align: center; }
+  #dialogue { position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); width: 660px; max-width: 88vw; background: rgba(12,8,10,.82); border: 1px solid rgba(255,205,120,.4); border-radius: 8px; padding: 10px 16px; font-size: 17px; line-height: 1.45; }
+  #dialogue .who { color: #ffd27a; font-weight: bold; letter-spacing: .05em; }
+  #speed { position: absolute; right: 16px; bottom: 24px; font-size: 30px; font-weight: bold; }
+  #speed small { font-size: 13px; color: #ffd27a; }
+  #wheel { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 260px; height: 260px; border-radius: 50%; background: rgba(12,8,10,.78); border: 2px solid rgba(255,205,120,.5); display: none; }
+  #wheel div { position: absolute; left: 50%; top: 50%; font-size: 14px; text-align: center; width: 90px; margin-left: -45px; }
+  #toast { position: absolute; left: 50%; top: 96px; transform: translateX(-50%); background: rgba(20,10,8,.75); padding: 6px 14px; border-radius: 5px; font-size: 15px; display: none; }
+  #start { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, rgba(30,10,20,.88), rgba(60,25,5,.82)); color: #fff; pointer-events: auto; z-index: 5; }
+  #start .card { text-align: center; max-width: 620px; padding: 24px; }
+  #start h1 { font-size: 64px; margin: 0; letter-spacing: .12em; color: #ffd27a; text-shadow: 0 4px 24px rgba(255,150,40,.5); }
+  #start h2 { font-size: 22px; margin: 6px 0 18px; letter-spacing: .3em; color: #ffe9c0; }
+  #start p { font-size: 15px; line-height: 1.55; color: #f3e2c8; }
+  #start button { pointer-events: auto; font-family: inherit; font-size: 20px; letter-spacing: .12em; background: #c98a1e; color: #fff; border: 2px solid #ffd27a; border-radius: 8px; padding: 12px 34px; cursor: pointer; margin-top: 10px; }
+  #start .keys { font-size: 13px; color: #d8c8a8; margin-top: 16px; line-height: 1.7; }
+  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="MARAVILLA: an open-world crime game. Drive, meet Vera, run ten story missions, outrun the police."></canvas>
+<div id="hud">
+  <div id="tagline"><b>MARAVILLA</b> &middot; 10 story missions &middot; 5 vehicles &middot; 5-star wanted &middot; open coastal city</div>
+  <canvas id="minimap" width="176" height="176"></canvas>
+  <div id="wanted"></div>
+  <div id="money">$0</div>
+  <div id="weapon">Fists</div>
+  <div id="objective"></div>
+  <div id="dialogue" style="display:none"></div>
+  <div id="speed"></div>
+  <div id="wheel"></div>
+  <div id="toast"></div>
+</div>
+<div id="start">
+  <div class="card">
+    <h1>MARAVILLA</h1>
+    <h2>ONE LAST SCORE</h2>
+    <p>Milo Vane. Fresh off the boat, fast hands, faster car. Vera has one last job for you — ten missions across a sun-soaked coastal city, from the marina to the Grand Maravilla casino. Steal cars, lose the cops, and get out clean.</p>
+    <button id="startBtn">START GAME</button>
+    <p class="keys">WASD drive / walk &middot; Mouse look &middot; E enter / exit car &middot; Space handbrake &middot; F weapon wheel &middot; Click shoot &middot; M mission &middot; P pause &middot; F5 save</p>
+  </div>
+</div>
+<p id="status" role="status" aria-live="polite"></p>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
